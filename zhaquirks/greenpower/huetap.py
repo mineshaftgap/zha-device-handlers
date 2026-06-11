@@ -30,12 +30,10 @@ from zhaquirks.const import (
     CLUSTER_ID,
     COMMAND,
     COMMAND_ID,
+    COMMAND_NOTIFICATION,
     PARAMS,
     PRESSED,
 )
-
-# Not in zhaquirks-1.2.0 const.py (GP-specific); define locally.
-COMMAND_NOTIFICATION = "notification"
 
 _SRC_ID_MASK = 0xFFFF0000
 _SRC_ID_MATCH = 0x00400000
