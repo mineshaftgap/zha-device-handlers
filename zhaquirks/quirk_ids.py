@@ -1,6 +1,9 @@
 """Quirk IDs used for matching quirked devices in ZHA."""
 
 # Konke
+# Danfoss
+DANFOSS_ALLY_THERMOSTAT = "danfoss.ally_thermostat"
+
 KONKE_BUTTON = "konke.button_remote"  # remote with custom handling in cluster handler
 
 # Tuya
