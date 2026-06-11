@@ -1,12 +1,9 @@
-"""Tests for the Green Power quirks.
-
-Uses zigpy PR #1814's GPDevice directly - the same object the quirks
-will receive when CustomGreenPowerDevice lands in zigpy.quirks.
-"""
+"""Tests for the Green Power quirks."""
 
 from __future__ import annotations
 
 import pytest
+from zigpy.quirks import get_green_power_quirk
 from zigpy.zgp import GPDevice, SecurityKeyType, SecurityLevel
 
 from zhaquirks.const import (
@@ -19,7 +16,11 @@ from zhaquirks.const import (
     PARAMS,
     PRESSED,
 )
-from zhaquirks.greenpower.huetap import DEVICE_AUTOMATION_TRIGGERS, match_hue_tap
+from zhaquirks.greenpower.huetap import (
+    DEVICE_AUTOMATION_TRIGGERS,
+    HueTap,
+    match_hue_tap,
+)
 
 # All four SrcIDs confirmed on real Taps (2026-06-09 via Z2M)
 HUE_TAP_SRC_IDS = [0x00402725, 0x0040EE88, 0x00404C79, 0x0040F4E4]
@@ -77,3 +78,20 @@ def test_trigger_command_ids(button: str, expected_cmd: int) -> None:
     """Each button maps to the Z2M-verified command ID."""
     entry = DEVICE_AUTOMATION_TRIGGERS[(PRESSED, button)]
     assert entry[PARAMS][COMMAND_ID] == expected_cmd
+
+
+# --- Registry resolution (P1 acceptance) ------------------------------------
+
+
+@pytest.mark.parametrize("src_id", HUE_TAP_SRC_IDS)
+def test_registry_resolves_hue_tap(src_id: int) -> None:
+    """GP quirk registry returns HueTap for all four known Tap SrcIDs."""
+    device = GPDevice(source_id=src_id, device_id=0x02, frame_counter=0)
+    assert get_green_power_quirk(device) is HueTap
+
+
+def test_registry_no_match_for_foreign_src_id() -> None:
+    """A SrcID outside the Hue Tap block does not resolve to HueTap."""
+    device = GPDevice(source_id=0x0171F886, device_id=0x02, frame_counter=0)
+    result = get_green_power_quirk(device)
+    assert result is not HueTap
