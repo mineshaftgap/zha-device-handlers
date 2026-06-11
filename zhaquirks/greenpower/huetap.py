@@ -1,8 +1,10 @@
 """Philips Hue Tap (original round, GPD DeviceID 0x02).
 
 Herdsman model 8718696743133 / modelID ``"GreenPower_2"``.  SrcID-addressed
-GPD (``ApplicationID`` 0b000), ``SecurityLevel.NoSecurity`` - unencrypted,
-commissions by button-press with no key exchange.
+GPD (``ApplicationID`` 0b000).  Depending on how it was commissioned the
+security level can be NoSecurity (unencrypted, no key exchange) or
+FullFrameCounterAndMIC with an out-of-band pre-configured link key -
+security is a commissioning detail and is NOT used for identification.
 
 Four buttons, PRESSED events only.  Kinetic / energy-harvesting device - there
 is no button-up frame.  Command IDs verified live via Zigbee2MQTT 2026-06-09:
@@ -19,7 +21,7 @@ SrcIDs in the 0x0040xxxx manufacturing block (verified: 0x00402725,
 from __future__ import annotations
 
 from zigpy.quirks import CustomGreenPowerDevice
-from zigpy.zgp import GP_CLUSTER_ID, GPDevice, SecurityKeyType, SecurityLevel
+from zigpy.zgp import GP_CLUSTER_ID, GPDevice
 from zhaquirks.const import (
     BUTTON_1,
     BUTTON_2,
@@ -67,11 +69,10 @@ class HueTap(CustomGreenPowerDevice, priority=5):
 
     @classmethod
     def match(cls, device: GPDevice) -> bool:
-        return (
-            device.security_level is SecurityLevel.NoSecurity
-            and device.security_key_type is SecurityKeyType.NoKey
-            and (device.source_id & _SRC_ID_MASK) == _SRC_ID_MATCH
-        )
+        # Security level and key type vary with how the Tap was commissioned
+        # (NoSecurity or FullFrameCounterAndMIC observed in the wild).
+        # The 0x0040xxxx SrcID block is the reliable identifier.
+        return (device.source_id & _SRC_ID_MASK) == _SRC_ID_MATCH
 
 
 # Module-level aliases so existing imports keep working.

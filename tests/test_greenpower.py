@@ -46,15 +46,20 @@ def test_match_returns_true_for_known_taps(src_id: int) -> None:
     assert match_hue_tap(device)
 
 
-def test_match_rejects_encrypted_device() -> None:
-    """A device with FullFrameCounterAndMIC (Busch-Jaeger style) is not a Tap."""
+def test_match_accepts_encrypted_device() -> None:
+    """A Hue Tap commissioned with FullFrameCounterAndMIC must still be matched.
+
+    Real-hardware finding (2026-06-11): the physical Hue Tap spare on lxc-ha-dev
+    was commissioned with security_level=FullFrameCounterAndMIC / NetworkKey.
+    Security is a deployment detail; the 0x0040xxxx SrcID block is the identifier.
+    """
     device = GPDevice(
         source_id=0x0040F4E4,
         device_id=0x02,
         frame_counter=0,
         security_level=SecurityLevel.FullFrameCounterAndMIC,
     )
-    assert not match_hue_tap(device)
+    assert match_hue_tap(device)
 
 
 def test_match_rejects_foreign_src_id() -> None:
