@@ -14,6 +14,7 @@ _GP_EXTRAS = {
     "BUTTON_3_AND_4": "button_3_and_4",
     "COMMAND_NOTIFICATION": "notification",
     "ENERGY_BAR": "energy_bar",
+    "RELEASED": "released",
 }
 for _k, _v in _GP_EXTRAS.items():
     if not hasattr(_const, _k):
